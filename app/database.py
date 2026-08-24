@@ -1,12 +1,16 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "mysql+pymysql://root:Nikhil%402029@localhost:3306/supermarket_db"
-
-engine = create_engine(
-    DATABASE_URL,
-    echo=True
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///./inventory.db"
 )
+
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 SessionLocal = sessionmaker(
     autocommit=False,

@@ -1,0 +1,139 @@
+{
+  "info": {
+    "name": "Inventory Management System API",
+    "description": "Local requests for the implemented Inventory Management System API. Category CRUD is contributed by Surisetty Kamesh.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "categoryId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "API Home",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/"
+          }
+        },
+        {
+          "name": "Database Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/test-db"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Add Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('categoryId', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fresh Food\",\n  \"description\": \"Fruit, vegetables, and other fresh items\"\n}"
+            },
+            "url": "{{baseUrl}}/categories/"
+          }
+        },
+        {
+          "name": "View Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories/"
+          }
+        },
+        {
+          "name": "View Category",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories/{{categoryId}}"
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fresh Produce\",\n  \"description\": \"Updated category description\"\n}"
+            },
+            "url": "{{baseUrl}}/categories/{{categoryId}}"
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/categories/{{categoryId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        { "name": "View Products", "request": { "method": "GET", "url": "{{baseUrl}}/products/" } },
+        { "name": "Add Product", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Milk\",\n  \"description\": \"Fresh milk\",\n  \"category\": \"Dairy\",\n  \"price\": 2.5,\n  \"quantity\": 20\n}" }, "url": "{{baseUrl}}/products/" } }
+      ]
+    },
+    {
+      "name": "Suppliers",
+      "item": [
+        { "name": "View Suppliers", "request": { "method": "GET", "url": "{{baseUrl}}/suppliers/" } }
+      ]
+    },
+    {
+      "name": "Stock",
+      "item": [
+        { "name": "View Stock", "request": { "method": "GET", "url": "{{baseUrl}}/stock/" } },
+        { "name": "View Low Stock", "request": { "method": "GET", "url": "{{baseUrl}}/stock/low?threshold=10" } }
+      ]
+    },
+    {
+      "name": "Sales and Reports",
+      "item": [
+        { "name": "View Sales", "request": { "method": "GET", "url": "{{baseUrl}}/sales/" } },
+        { "name": "Daily Sales Report", "request": { "method": "GET", "url": "{{baseUrl}}/reports/daily-sales" } },
+        { "name": "Product Sales Report", "request": { "method": "GET", "url": "{{baseUrl}}/reports/product-sales" } }
+      ]
+    }
+  ]
+}
