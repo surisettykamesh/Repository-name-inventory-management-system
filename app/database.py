@@ -1,36 +1,26 @@
-from fastapi import FastAPI
-from sqlalchemy import text
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-from app.database import engine
+DATABASE_URL = "mysql+pymysql://root:Nikhil%402029@localhost:3306/supermarket_db"
 
-
-app = FastAPI(
-    title="Inventory Management System",
-    description="Inventory Management System API",
-    version="1.0.0"
+engine = create_engine(
+    DATABASE_URL,
+    echo=True
 )
 
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-@app.get("/")
-def home():
-    return {
-        "message": "Inventory Management System API is running"
-    }
+Base = declarative_base()
 
 
-@app.get("/test-db")
-def test_database():
+def get_db():
+    db = SessionLocal()
+
     try:
-        with engine.connect() as connection:
-            result = connection.execute(text("SELECT 1"))
-
-            return {
-                "message": "Database connected successfully",
-                "result": result.scalar()
-            }
-
-    except Exception as e:
-        return {
-            "message": "Database connection failed",
-            "error": str(e)
-        }
+        yield db
+    finally:
+        db.close()

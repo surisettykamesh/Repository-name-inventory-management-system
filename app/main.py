@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from app.database import engine
+from app.routers.customer import router as customer_router
 
 
 app = FastAPI(
@@ -9,6 +10,10 @@ app = FastAPI(
     description="Inventory Management System API",
     version="1.0.0"
 )
+
+
+
+app.include_router(customer_router)
 
 
 @app.get("/")
