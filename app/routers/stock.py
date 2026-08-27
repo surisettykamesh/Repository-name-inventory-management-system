@@ -1,38 +1,197 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.crud.stock import create_stock, delete_stock, get_stock, get_stock_records, update_stock
 from app.database import get_db
-from app.schemas.stock import StockCreate, StockResponse, StockUpdate
 
-router = APIRouter(prefix="/stock", tags=["Stock"])
+from app.schemas.stock import (
+    StockCreate,
+    StockUpdate,
+    StockAdd,
+    StockReduce,
+    StockResponse,
+    LowStockResponse
+)
 
-
-@router.post("/", response_model=StockResponse)
-def add_stock(data: StockCreate, db: Session = Depends(get_db)):
-	return create_stock(db, data)
-
-
-@router.get("/", response_model=list[StockResponse])
-def view_stock(db: Session = Depends(get_db)):
-	return get_stock_records(db)
+from app.crud import stock as stock_crud
 
 
-@router.get("/low", response_model=list[StockResponse])
-def view_low_stock(threshold: int = 10, db: Session = Depends(get_db)):
-	return [item for item in get_stock_records(db) if item.quantity <= threshold]
+router = APIRouter(
+    prefix="/stock",
+    tags=["Stock Management"]
+)
 
 
-@router.put("/{stock_id}", response_model=StockResponse)
-def edit_stock(stock_id: int, data: StockUpdate, db: Session = Depends(get_db)):
-	stock = update_stock(db, stock_id, data)
-	if not stock:
-		raise HTTPException(404, "Stock record not found")
-	return stock
+# Create Stock
+@router.post(
+    "/",
+    response_model=StockResponse,
+    status_code=201
+)
+def create_stock(
+    stock_data: StockCreate,
+    db: Session = Depends(get_db)
+):
+    try:
+        return stock_crud.create_stock(
+            db,
+            stock_data
+        )
+
+    except ValueError as e:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
 
-@router.delete("/{stock_id}")
-def remove_stock(stock_id: int, db: Session = Depends(get_db)):
-	if not delete_stock(db, stock_id):
-		raise HTTPException(404, "Stock record not found")
-	return {"message": "Stock record deleted successfully"}
+# Get All Stock
+@router.get(
+    "/",
+    response_model=list[StockResponse]
+)
+def get_all_stock(
+    db: Session = Depends(get_db)
+):
+    return stock_crud.get_all_stock(db)
+
+
+# Low Stock
+@router.get(
+    "/low-stock",
+    response_model=list[LowStockResponse]
+)
+def get_low_stock(
+    db: Session = Depends(get_db)
+):
+    return stock_crud.get_low_stock(db)
+
+
+# Get Stock By ID
+@router.get(
+    "/{stock_id}",
+    response_model=StockResponse
+)
+def get_stock(
+    stock_id: int,
+    db: Session = Depends(get_db)
+):
+    stock = stock_crud.get_stock_by_id(
+        db,
+        stock_id
+    )
+
+    if not stock:
+        raise HTTPException(
+            status_code=404,
+            detail="Stock not found"
+        )
+
+    return stock
+
+
+# Update Stock
+@router.put(
+    "/{stock_id}",
+    response_model=StockResponse
+)
+def update_stock(
+    stock_id: int,
+    stock_data: StockUpdate,
+    db: Session = Depends(get_db)
+):
+    stock = stock_crud.update_stock(
+        db,
+        stock_id,
+        stock_data
+    )
+
+    if not stock:
+        raise HTTPException(
+            status_code=404,
+            detail="Stock not found"
+        )
+
+    return stock
+
+
+# Add Stock
+@router.patch(
+    "/{stock_id}/add",
+    response_model=StockResponse
+)
+def add_stock(
+    stock_id: int,
+    stock_data: StockAdd,
+    db: Session = Depends(get_db)
+):
+    stock = stock_crud.add_stock(
+        db,
+        stock_id,
+        stock_data
+    )
+
+    if not stock:
+        raise HTTPException(
+            status_code=404,
+            detail="Stock not found"
+        )
+
+    return stock
+
+
+# Reduce Stock
+@router.patch(
+    "/{stock_id}/reduce",
+    response_model=StockResponse
+)
+def reduce_stock(
+    stock_id: int,
+    stock_data: StockReduce,
+    db: Session = Depends(get_db)
+):
+    try:
+        stock = stock_crud.reduce_stock(
+            db,
+            stock_id,
+            stock_data
+        )
+
+        if not stock:
+            raise HTTPException(
+                status_code=404,
+                detail="Stock not found"
+            )
+
+        return stock
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+# Delete Stock
+@router.delete(
+    "/{stock_id}"
+)
+def delete_stock(
+    stock_id: int,
+    db: Session = Depends(get_db)
+):
+    stock = stock_crud.delete_stock(
+        db,
+        stock_id
+    )
+
+    if not stock:
+        raise HTTPException(
+            status_code=404,
+            detail="Stock not found"
+        )
+
+    return {
+        "message": "Stock deleted successfully"
+    }
