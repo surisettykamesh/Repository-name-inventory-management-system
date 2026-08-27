@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from app.routers import reports
 from app.database import engine
 from app.database import Base
 from app.models.category import Category
@@ -33,7 +34,7 @@ app.include_router(product_router)
 app.include_router(supplier_router)
 app.include_router(stock_router)
 app.include_router(sales_router)
-app.include_router(reports_router)
+app.include_router(reports.router)
 
 Base.metadata.create_all(bind=engine)
 

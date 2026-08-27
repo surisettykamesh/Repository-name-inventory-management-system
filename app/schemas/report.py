@@ -1,13 +1,19 @@
 from pydantic import BaseModel
+from datetime import date
 
 
 class DailySalesReport(BaseModel):
-	date: str
-	sales_count: int
-	revenue: float
+    date: date
+    total_bills: int
+    total_sales: float
 
 
-class ProductSalesSummary(BaseModel):
-	product_id: int
-	quantity_sold: int
-	revenue: float
+class RevenueReport(BaseModel):
+    total_revenue: float
+
+
+class ProductSalesReport(BaseModel):
+    product_id: int
+    product_name: str
+    quantity_sold: int
+    revenue: float
