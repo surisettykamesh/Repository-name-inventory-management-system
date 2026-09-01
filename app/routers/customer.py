@@ -2,17 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+
 from app.schemas.customer import (
     CustomerCreate,
     CustomerUpdate,
     CustomerResponse
 )
-from app.crud.customer import (
-    create_customer,
-    get_customers,
-    get_customer,
-    update_customer,
-    delete_customer
+
+from app.services.customer_service import (
+    create_customer_service,
+    get_customers_service,
+    get_customer_service,
+    update_customer_service,
+    delete_customer_service
 )
 
 
@@ -22,27 +24,42 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=CustomerResponse)
+@router.post(
+    "/",
+    response_model=CustomerResponse
+)
 def add_customer(
     customer: CustomerCreate,
     db: Session = Depends(get_db)
 ):
-    return create_customer(db, customer)
+    return create_customer_service(
+        db,
+        customer
+    )
 
 
-@router.get("/", response_model=list[CustomerResponse])
+@router.get(
+    "/",
+    response_model=list[CustomerResponse]
+)
 def view_customers(
     db: Session = Depends(get_db)
 ):
-    return get_customers(db)
+    return get_customers_service(db)
 
 
-@router.get("/{customer_id}", response_model=CustomerResponse)
+@router.get(
+    "/{customer_id}",
+    response_model=CustomerResponse
+)
 def view_customer(
     customer_id: int,
     db: Session = Depends(get_db)
 ):
-    customer = get_customer(db, customer_id)
+    customer = get_customer_service(
+        db,
+        customer_id
+    )
 
     if not customer:
         raise HTTPException(
@@ -53,13 +70,16 @@ def view_customer(
     return customer
 
 
-@router.put("/{customer_id}", response_model=CustomerResponse)
+@router.put(
+    "/{customer_id}",
+    response_model=CustomerResponse
+)
 def update_customer_api(
     customer_id: int,
     customer: CustomerUpdate,
     db: Session = Depends(get_db)
 ):
-    updated_customer = update_customer(
+    updated_customer = update_customer_service(
         db,
         customer_id,
         customer
@@ -74,12 +94,14 @@ def update_customer_api(
     return updated_customer
 
 
-@router.delete("/{customer_id}")
+@router.delete(
+    "/{customer_id}"
+)
 def remove_customer(
     customer_id: int,
     db: Session = Depends(get_db)
 ):
-    deleted_customer = delete_customer(
+    deleted_customer = delete_customer_service(
         db,
         customer_id
     )
